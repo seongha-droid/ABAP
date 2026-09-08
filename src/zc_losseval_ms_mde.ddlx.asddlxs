@@ -1,0 +1,215 @@
+// -----------------------------------------------------------------------------
+// [Metadata 역할] List Page와 Object Page의 전체 화면 구성을 정의한다.
+// HeaderInfo, 헤더 KPI, S/M/L 자재 Facet, 필터바, List 컬럼을 한곳에서 관리한다.
+// -----------------------------------------------------------------------------
+@Metadata.layer: #CORE
+
+// Object Page 제목은 외주처명, 부제는 평가 ID로 표시한다.
+@UI.headerInfo: {
+  typeName: '공급업체 성과',
+  typeNamePlural: '공급업체 성과 리스트',
+  title:       { type: #STANDARD, value: 'SupplierName' },
+  description: { type: #STANDARD, value: 'EvaluationID' }
+}
+
+annotate entity ZC_LossEvaluation_MS with
+{
+  // ---------------------------------------------------------------------------
+  // [Object Page Header]
+  // purpose #HEADER인 DataPoint Facet은 Object Page 상단 KPI로 표시된다.
+  // targetQualifier는 아래 각 필드의 @UI.dataPoint qualifier와 연결된다.
+  // ---------------------------------------------------------------------------
+  @UI.facet: [
+    { id: 'HeaderYear',   purpose: #HEADER, type: #DATAPOINT_REFERENCE,
+      targetQualifier: 'EvaluationYear', position: 10 },
+    { id: 'HeaderPO',     purpose: #HEADER, type: #DATAPOINT_REFERENCE,
+      targetQualifier: 'POCount', position: 20 },
+    { id: 'HeaderLoss',   purpose: #HEADER, type: #DATAPOINT_REFERENCE,
+      targetQualifier: 'CurrentLoss', position: 30 },
+    { id: 'HeaderBase',   purpose: #HEADER, type: #DATAPOINT_REFERENCE,
+      targetQualifier: 'BaselineLoss', position: 40 },
+    { id: 'HeaderSaving', purpose: #HEADER, type: #DATAPOINT_REFERENCE,
+      targetQualifier: 'SavingQty', position: 50 },
+    { id: 'HeaderReward', purpose: #HEADER, type: #DATAPOINT_REFERENCE,
+      targetQualifier: 'RewardAmount', position: 60 },
+  
+    // -------------------------------------------------------------------------
+    // [소형 자재 탭]
+    // 최상위 COLLECTION이 탭/섹션이 되고 하위 COLLECTION이 세부 구역이 된다.
+    // _SmallResult, _SmallTrend, _SmallItems는 Root CDS의 자재 전용 Association이다.
+    // -------------------------------------------------------------------------
+    { id: 'SmallMaterial', type: #COLLECTION,
+      label: '소형 절단 강판', position: 10 },
+    { id: 'SmallDetailsSection', parentId: 'SmallMaterial',
+      type: #COLLECTION, label: '상세 정보', position: 10 },
+    { id: 'SmallDetails', parentId: 'SmallDetailsSection',
+      type: #FIELDGROUP_REFERENCE,
+      targetElement: '_SmallResult', targetQualifier: 'MaterialDetails',
+      position: 10 },
+    { id: 'SmallRewardSection', parentId: 'SmallMaterial',
+      type: #COLLECTION, label: '보상 산출 근거', position: 20 },
+    { id: 'SmallReward', parentId: 'SmallRewardSection',
+      type: #FIELDGROUP_REFERENCE,
+      targetElement: '_SmallResult', targetQualifier: 'RewardBasis',
+      position: 10 },
+    { id: 'SmallTrendSection', parentId: 'SmallMaterial',
+      type: #COLLECTION, label: 'Loss율 추이', position: 30 },
+    { id: 'SmallTrend', parentId: 'SmallTrendSection',
+      type: #CHART_REFERENCE,
+      targetElement: '_SmallTrend', targetQualifier: 'LossTrend',
+      position: 10 },
+    { id: 'SmallPOSection', parentId: 'SmallMaterial',
+      type: #COLLECTION, label: 'PO별 성과', position: 40 },
+    { id: 'SmallPO', parentId: 'SmallPOSection',
+      type: #LINEITEM_REFERENCE,
+      targetElement: '_SmallItems', position: 10 },
+  
+    // [중형 자재 탭] 소형과 동일한 구조이며 Association만 Medium 전용이다.
+    { id: 'MediumMaterial', type: #COLLECTION,
+      label: '중형 절단 강판', position: 20 },
+    { id: 'MediumDetailsSection', parentId: 'MediumMaterial',
+      type: #COLLECTION, label: '상세 정보', position: 10 },
+    { id: 'MediumDetails', parentId: 'MediumDetailsSection',
+      type: #FIELDGROUP_REFERENCE,
+      targetElement: '_MediumResult', targetQualifier: 'MaterialDetails',
+      position: 10 },
+    { id: 'MediumRewardSection', parentId: 'MediumMaterial',
+      type: #COLLECTION, label: '보상 산출 근거', position: 20 },
+    { id: 'MediumReward', parentId: 'MediumRewardSection',
+      type: #FIELDGROUP_REFERENCE,
+      targetElement: '_MediumResult', targetQualifier: 'RewardBasis',
+      position: 10 },
+    { id: 'MediumTrendSection', parentId: 'MediumMaterial',
+      type: #COLLECTION, label: 'Loss율 추이', position: 30 },
+    { id: 'MediumTrend', parentId: 'MediumTrendSection',
+      type: #CHART_REFERENCE,
+      targetElement: '_MediumTrend', targetQualifier: 'LossTrend',
+      position: 10 },
+    { id: 'MediumPOSection', parentId: 'MediumMaterial',
+      type: #COLLECTION, label: 'PO별 성과', position: 40 },
+    { id: 'MediumPO', parentId: 'MediumPOSection',
+      type: #LINEITEM_REFERENCE,
+      targetElement: '_MediumItems', position: 10 },
+  
+    // [대형 자재 탭] 소형/중형과 동일한 UX를 제공한다.
+    { id: 'LargeMaterial', type: #COLLECTION,
+      label: '대형 절단 강판', position: 30 },
+    { id: 'LargeDetailsSection', parentId: 'LargeMaterial',
+      type: #COLLECTION, label: '상세 정보', position: 10 },
+    { id: 'LargeDetails', parentId: 'LargeDetailsSection',
+      type: #FIELDGROUP_REFERENCE,
+      targetElement: '_LargeResult', targetQualifier: 'MaterialDetails',
+      position: 10 },
+    { id: 'LargeRewardSection', parentId: 'LargeMaterial',
+      type: #COLLECTION, label: '보상 산출 근거', position: 20 },
+    { id: 'LargeReward', parentId: 'LargeRewardSection',
+      type: #FIELDGROUP_REFERENCE,
+      targetElement: '_LargeResult', targetQualifier: 'RewardBasis',
+      position: 10 },
+    { id: 'LargeTrendSection', parentId: 'LargeMaterial',
+      type: #COLLECTION, label: 'Loss율 추이', position: 30 },
+    { id: 'LargeTrend', parentId: 'LargeTrendSection',
+      type: #CHART_REFERENCE,
+      targetElement: '_LargeTrend', targetQualifier: 'LossTrend',
+      position: 10 },
+    { id: 'LargePOSection', parentId: 'LargeMaterial',
+      type: #COLLECTION, label: 'PO별 성과', position: 40 },
+    { id: 'LargePO', parentId: 'LargePOSection',
+      type: #LINEITEM_REFERENCE,
+      targetElement: '_LargeItems', position: 10 }
+  ]
+
+  // ---------------------------------------------------------------------------
+  // [List Page 필터와 컬럼]
+  // selectionField는 필터바, lineItem은 결과 테이블, dataPoint는 헤더 KPI이다.
+  // position으로 화면 순서를 고정하고 importance로 반응형 우선순위를 지정한다.
+  // ---------------------------------------------------------------------------
+  @UI.selectionField: [{ position: 10 }]
+  @UI.lineItem: [{ position: 20, label: '외주처 ID', importance: #HIGH }]
+  SupplierID;
+
+  // 외주처명을 가장 왼쪽 첫 번째 핵심 컬럼으로 표시한다.
+  @UI.lineItem: [{ position: 10, label: '외주처명', importance: #HIGH }]
+  SupplierName;
+
+  // 평가 ID는 필터와 테이블 모두에 제공한다.
+  @UI.selectionField: [{ position: 20 }]
+  @UI.lineItem: [{ position: 40, label: '평가 ID', importance: #HIGH }]
+  EvaluationID;
+
+  @UI.lineItem: [{ position: 30, label: '플랜트', importance: #HIGH }]
+  Plant;
+
+  // 평가년도는 필수 필터이며 Object Page Header KPI로도 사용한다.
+  @UI.selectionField: [{ position: 30 }]
+  @UI.lineItem: [{ position: 50, label: '평가년도', importance: #HIGH }]
+  @UI.dataPoint: { qualifier: 'EvaluationYear', title: '평가년도' }
+  EvaluationYear;
+
+  // 실제 Loss율에 LossCriticality를 연결해 개선 여부를 색으로 전달한다.
+  @UI.lineItem: [{
+    position: 60,
+    label: 'Loss율',
+    importance: #HIGH,
+    criticality: 'LossCriticality'
+  }]
+  // 기준 Loss율은 Object Page 비교용 KPI이며 List 컬럼에는 표시하지 않는다.
+  @UI.dataPoint: {
+    qualifier: 'CurrentLoss',
+    title: 'Loss율',
+    criticality: 'LossCriticality',
+    valueFormat: { numberOfFractionalDigits: 2 }
+  }
+  CurrentLossRate;
+
+  @UI.dataPoint: {
+    qualifier: 'BaselineLoss',
+    title: '기준 Loss율',
+    valueFormat: { numberOfFractionalDigits: 2 }
+  }
+  BaselineLossRate;
+
+  // 개선/미개선 상태는 PerformanceCriticality를 사용한다.
+  @UI.lineItem: [{
+    position: 70,
+    label: '성과상태',
+    importance: #HIGH,
+    criticality: 'PerformanceCriticality'
+  }]
+  PerformanceStatus;
+
+  // 외주처 보상액은 금액/통화 Semantics와 정보 Criticality를 사용한다.
+  @UI.lineItem: [{
+    position: 80,
+    label: '외주처 보상액',
+    importance: #HIGH,
+    criticality: 'RewardCriticality'
+  }]
+  @UI.dataPoint: {
+    qualifier: 'RewardAmount',
+    title: '산정 보상액',
+    criticality: 'RewardCriticality'
+  }
+  SupplierRewardAmount;
+
+  // 정산 상태는 C/P 코드가 아닌 Projection에서 만든 한글 텍스트로 표시된다.
+  @UI.selectionField: [{ position: 40 }]
+  @UI.lineItem: [{ position: 90, label: '정산 상태', importance: #HIGH }]
+  EvaluationStatus;
+
+  // 설명 필드는 EvaluationStatus의 Text로 사용되므로 독립 필드는 숨긴다.
+  @UI.hidden: true
+  EvaluationStatusText;
+
+  // 아래 두 DataPoint는 Object Page Header의 PO 수와 절감량 KPI이다.
+  @UI.dataPoint: { qualifier: 'POCount', title: 'PO 개수' }
+  POCount;
+
+  @UI.dataPoint: {
+    qualifier: 'SavingQty',
+    title: '자재 절감량',
+    valueFormat: { numberOfFractionalDigits: 1 }
+  }
+  TotalSavingQty;
+}
+

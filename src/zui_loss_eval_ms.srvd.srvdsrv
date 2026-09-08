@@ -1,0 +1,26 @@
+@EndUserText.label: '외주처 Loss 평가 UI 서비스'
+@ObjectModel.leadingEntity.name: 'ZC_LossEvaluation_MS'
+
+define service ZUI_LOSS_EVAL_MS
+{
+  expose ZC_LossEvaluation_MS
+    as LossEvaluations;
+
+  expose ZC_LossEvaluationItem_MS
+    as LossEvaluationItems;
+
+  expose ZI_LossTrend_MS
+    as LossTrends;
+
+  expose ZC_LossEvaluationResult_MS
+    as LossEvaluationResults;
+
+  expose ZI_LossSupplier_MS
+    as Suppliers;
+
+  expose ZI_LossMaterial_MS
+    as Materials;
+
+  expose ZI_LossEvaluationYear_MS
+    as EvaluationYears;
+}

@@ -1,0 +1,35 @@
+{
+  "formatVersion": "2",
+  "header": {
+    "description": "외주처별 Loss율 및 보상액 관리",
+    "originalLanguage": "en",
+    "abapLanguageVersion": "cloudDevelopment"
+  },
+  "generalInformation": {
+    "appType": "ui5",
+    "catalogId": "SAP_TC_UI5_REPO_UIAD",
+    "targetMappingTitle": "외주처 성과평가"
+  },
+  "ui5AppDetails": {
+    "appId": "zpracticekm.lossevalms"
+  },
+  "navigation": {
+    "targetMappingId": "ZLOSSEVALMS_UI5R_TM",
+    "semanticObject": "ZLOSS_EVAL",
+    "action": "display",
+    "desktop": true,
+    "tablet": true,
+    "phone": true
+  },
+  "tiles": [
+    {
+      "id": "ZLOSSEVALMS_UI5R_AL",
+      "tileType": "static",
+      "isDefault": true,
+      "standard": {
+        "title": "외주처 성과평가",
+        "subtitle": "Loss율 및 보상액 조회"
+      }
+    }
+  ]
+}

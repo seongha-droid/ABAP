@@ -1,0 +1,128 @@
+// -----------------------------------------------------------------------------
+// [Metadata 역할] PO Item Projection의 차트와 테이블 표시 방법을 정의한다.
+// 데이터 계산은 CDS가 담당하고, 이 파일은 순서·라벨·중요도만 담당한다.
+// -----------------------------------------------------------------------------
+@Metadata.layer: #CORE
+
+// LossTrend라는 이름의 선형 차트를 선언한다.
+@UI.chart: [{
+  qualifier: 'LossTrend',
+  title: 'Loss율 추이',
+  description: '입고일 기준 PO Item별 Loss율',
+  chartType: #LINE,
+  // 입고일을 X축, 실제/기준 Loss율을 Y축 두 시리즈로 사용한다.
+  dimensions: [ 'ReceiptDate' ],
+  measures: [ 'POLossRate', 'BaselineLossRate' ],
+  dimensionAttributes: [{
+    dimension: 'ReceiptDate',
+    role: #CATEGORY
+  }],
+  measureAttributes: [
+    { measure: 'POLossRate', role: #AXIS_1 },
+    { measure: 'BaselineLossRate', role: #AXIS_1 }
+  ]
+}]
+
+// 입고일 오름차순 정렬 후 위에서 선언한 차트를 기본 시각화로 사용한다.
+@UI.presentationVariant: [{
+  qualifier: 'LossTrend',
+  sortOrder: [{ by: 'ReceiptDate', direction: #ASC }],
+  visualizations: [{ type: #AS_CHART, qualifier: 'LossTrend' }]
+}]
+
+annotate entity ZC_LossEvaluationItem_MS with
+{
+  // position 숫자가 작을수록 표의 왼쪽에 먼저 표시된다.
+  // importance #HIGH는 화면 폭이 좁아도 우선 유지할 핵심 컬럼이라는 의미이다.
+  @UI.lineItem: [{
+    position: 10,
+    label: 'PO 번호',
+    importance: #HIGH
+  }]
+  PurchaseOrder;
+
+  // 같은 PO 안의 품목 번호. 현재 적재 데이터는 보통 00010을 사용한다.
+  @UI.lineItem: [{
+    position: 20,
+    label: 'PO Item',
+    importance: #HIGH
+  }]
+  PurchaseOrderItem;
+
+  // 차트 X축과 표 양쪽에서 공통으로 사용하는 입고일.
+  @UI.lineItem: [{
+    position: 30,
+    label: '입고일',
+    importance: #HIGH
+  }]
+  ReceiptDate;
+
+  // 입고량과 아래 수량 필드는 CDS Semantics 덕분에 단위가 함께 표시된다.
+  @UI.lineItem: [{
+    position: 40,
+    label: '완제품 입고량',
+    importance: #HIGH
+  }]
+  ReceiptQty;
+
+  // 정상 소진량은 공정상 허용되는 정상 Scrap 수량이다.
+  @UI.lineItem: [{
+    position: 50,
+    label: '정상 소진량',
+    importance: #HIGH
+  }]
+  NormalScrapQty;
+
+  // 비정상 소진량은 Loss율 계산의 분자에 사용된다.
+  @UI.lineItem: [{
+    position: 60,
+    label: '비정상 소진량',
+    importance: #HIGH
+  }]
+  AbnormalLossQty;
+
+  // 현장에서 실제 사용한 원자재 전체 수량.
+  @UI.lineItem: [{
+    position: 70,
+    label: '원자재 총 소진량',
+    importance: #HIGH
+  }]
+  ActualInputQty;
+
+  // 기준 대비 절감된 원자재 수량.
+  @UI.lineItem: [{
+    position: 80,
+    label: '원자재 절감량',
+    importance: #HIGH
+  }]
+  POSavingQty;
+
+  // Criticality 경로로 기준 이하/초과에 따라 의미색을 표시한다.
+  @UI.lineItem: [{
+    position: 90,
+    label: 'Loss율',
+    importance: #HIGH,
+    criticality: 'LossCriticality'
+  }]
+  // DataPoint는 차트 또는 카드가 값의 서식과 의미를 이해하도록 한다.
+  @UI.dataPoint: {
+    qualifier: 'POLossRate',
+    title: 'Loss율',
+    valueFormat: { numberOfFractionalDigits: 2 }
+  }
+  POLossRate;
+
+  // 아래 기술 필드는 계산과 단위 표시에 필요하지만 독립 컬럼으로는 숨긴다.
+  @UI.hidden: true
+  BaselineLossRate;
+
+  @UI.hidden: true
+  LossCriticality;
+
+  @UI.hidden: true
+  ReceiptUOM;
+
+  @UI.hidden: true
+  WeightUOM;
+}
+

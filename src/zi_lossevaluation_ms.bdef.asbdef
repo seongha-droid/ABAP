@@ -1,0 +1,155 @@
+// -----------------------------------------------------------------------------
+// [Behavior 역할] Interface 계층의 Managed RAP 동작을 정의한다.
+// 어떤 CDS 필드가 어느 DB 테이블 필드에 저장되는지와 수정 가능 여부를 연결한다.
+// 현재 시나리오는 조회 중심이며 계산/설명 필드는 readonly로 보호한다.
+// -----------------------------------------------------------------------------
+// managed: 저장 처리의 기본 구현을 RAP 프레임워크가 제공한다.
+managed;
+// strict(2): 최신 RAP 문법과 엄격한 모델 일관성 검사를 적용한다.
+strict ( 2 );
+
+// Root 평가 Header의 Behavior 정의.
+define behavior for ZI_LossEvaluation_MS
+  alias Evaluation
+  persistent table zloss_hdr_MS
+  // Root가 잠금의 기준이며 자식 Item/Result도 이 잠금에 종속된다.
+  lock master
+  // 교육용 앱으로 별도 인스턴스 권한 구현을 사용하지 않는다.
+  authorization master ( none )
+{
+  // 계산값, Association에서 가져온 값, 기술 상태값은 직접 수정할 수 없다.
+  field ( readonly )
+    EvaluationID,
+    SupplierName,
+    BaselineLossRate,
+    POCount,
+    EvaluationStatus,
+    EvaluationStatusText,
+    CurrentLossRate,
+    TotalSavingQty,
+    WeightUOM,
+    RecognizedSavingAmount,
+    SupplierRewardAmount,
+    CompanyBenefitAmount,
+    CurrencyCode,
+    PerformanceStatus,
+    PerformanceCriticality,
+    LossCriticality,
+    RewardCriticality;
+
+  // CDS CamelCase 필드와 물리 테이블 snake_case 필드를 1:1로 매핑한다.
+  mapping for zloss_hdr_MS
+  {
+    EvaluationID             = evaluation_id;
+    SupplierID               = supplier_id;
+    Plant                    = plant;
+    RawMaterialID            = raw_material_id;
+    BaselineAbnormalLossRate = baseline_abnormal_loss_rate;
+    EvaluationYear           = evaluation_year;
+    StoredPOCount            = po_count;
+    StoredEvaluationStatus   = evaluation_status;
+    CreatedBy                = created_by;
+    CreatedAt                = created_at;
+    LastChangedBy            = last_changed_by;
+    LocalLastChangedAt       = local_last_changed_at;
+  }
+
+  // Composition 자식으로 이동할 수 있는 탐색 경로를 Behavior에 공개한다.
+  association _Items   { }
+  association _Results { }
+}
+
+// PO Item 자식 엔티티의 Behavior 정의.
+define behavior for ZI_LossEvaluationItem_MS
+  alias EvaluationItem
+  persistent table zloss_itm_MS
+  // 자식은 독립적으로 잠그지 않고 부모 Evaluation의 잠금/권한을 따른다.
+  lock dependent by _Evaluation
+  authorization dependent by _Evaluation
+{
+  // 키와 계산 파생값은 사용자가 화면에서 직접 변경하지 못하게 한다.
+  field ( readonly )
+    EvaluationID,
+    ItemNo,
+    BaselineLossRate,
+    POLossRate,
+    POSavingQty,
+    LossCriticality;
+
+  // 실제 수정 가능한 PO 실적 필드와 ZLOSS_ITM_MS 저장 필드를 연결한다.
+  mapping for zloss_itm_MS
+  {
+    EvaluationID          = evaluation_id;
+    ItemNo                = item_no;
+    PurchaseOrder         = purchase_order;
+    PurchaseOrderItem     = purchase_order_item;
+    FinishedMaterialID    = finished_material_id;
+    ReceiptDate           = receipt_date;
+    ReceiptQty            = receipt_qty;
+    ReceiptUOM            = receipt_uom;
+    StandardWeight        = standard_weight;
+    StandardInputQty      = standard_input_qty;
+    StandardTotalInputQty = standard_total_input_qty;
+    OutputWeight          = output_weight;
+    ActualInputQty        = actual_input_qty;
+    WeightUOM             = weight_uom;
+    NormalScrapQty        = normal_scrap_qty;
+    AbnormalLossQty       = abnormal_loss_qty;
+  }
+
+  // 부모 Header로의 Association을 Behavior에 포함한다.
+  association _Evaluation { }
+}
+
+// 자재별 계산 결과 자식 엔티티의 Behavior 정의.
+define behavior for ZI_LossEvaluationResult_MS
+  alias EvaluationResult
+  persistent table zloss_res_MS
+  // 결과 역시 부모 평가의 잠금과 권한을 상속한다.
+  lock dependent by _Evaluation
+  authorization dependent by _Evaluation
+{
+  // 이름, 백분율, 자재별 집계 등 계산/조회 전용 필드는 readonly이다.
+  field ( readonly )
+    EvaluationID,
+    FinishedMaterialID,
+    FinishedMaterialName,
+    RawMaterialID,
+    RawMaterialName,
+    MaterialPOCount,
+    MaterialSavingQty,
+    ActualLossRate,
+    BaselineLossRate,
+    LossCriticality,
+    SupplierSharePercent,
+    CompanySharePercent,
+    RewardCriticality;
+
+  // 저장된 최종 계산값을 결과 테이블의 물리 필드와 매핑한다.
+  mapping for zloss_res_MS
+  {
+    EvaluationID                  = evaluation_id;
+    FinishedMaterialID            = finished_material_id;
+    TotalOutputWeight             = total_output_weight;
+    TotalStandardInputQty         = total_standard_input_qty;
+    TotalActualInputQty           = total_actual_input_qty;
+    TotalNormalScrapQty           = total_normal_scrap_qty;
+    TotalAbnormalLossQty          = total_abnormal_loss_qty;
+    TotalActualLossQty            = total_actual_loss_qty;
+    ActualAbnormalLossRate        = actual_abnormal_loss_rate;
+    BaselineAbnormalLossRate      = baseline_abnormal_loss_rate;
+    RecognizedSavingQty           = recognized_saving_qty;
+    WeightUOM                     = weight_uom;
+    RawMaterialPrice              = raw_material_price;
+    RecognizedSavingAmount        = recognized_saving_amount;
+    SupplierTotalSavingAmount     = supplier_total_saving_amount;
+    SupplierShare                 = supplier_share;
+    CompanyShare                  = company_share;
+    SupplierRewardAmount          = supplier_reward_amount;
+    CompanyBenefitAmount          = company_benefit_amount;
+    CurrencyCode                  = currency_code;
+    CalculatedAt                  = calculated_at;
+  }
+
+  association _Evaluation { }
+}

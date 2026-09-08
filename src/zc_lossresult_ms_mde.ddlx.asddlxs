@@ -1,0 +1,80 @@
+// -----------------------------------------------------------------------------
+// [Metadata 역할] Object Page 자재 탭의 두 Field Group을 정의한다.
+// MaterialDetails=상세 정보, RewardBasis=보상 산출 근거 영역이다.
+// -----------------------------------------------------------------------------
+@Metadata.layer: #CORE
+
+annotate entity ZC_LossEvaluationResult_MS with
+{
+  // 같은 qualifier를 가진 필드들은 하나의 Field Group 카드로 묶인다.
+  // position은 그룹 안에서의 표시 순서를 의미한다.
+  @UI.fieldGroup: [{
+    qualifier: 'MaterialDetails',
+    position: 10,
+    label: '자재 코드'
+  }]
+  FinishedMaterialID;
+
+  // 사용자가 이해하기 쉬운 한글 자재명을 기술 ID 다음에 표시한다.
+  @UI.fieldGroup: [{
+    qualifier: 'MaterialDetails',
+    position: 20,
+    label: '자재명'
+  }]
+  FinishedMaterialName;
+
+  // 선택한 자재에 실제로 포함된 DISTINCT PO 개수.
+  @UI.fieldGroup: [{
+    qualifier: 'MaterialDetails',
+    position: 30,
+    label: 'PO 개수'
+  }]
+  MaterialPOCount;
+
+  // 모든 완제품이 공통으로 사용하는 원자재명과 ID.
+  @UI.fieldGroup: [{
+    qualifier: 'MaterialDetails',
+    position: 40,
+    label: '원자재명'
+  }]
+  RawMaterialName;
+
+  // RewardBasis 그룹: 외주처 배분율 → 인정절감액 → 산정 보상액 순서.
+  @UI.fieldGroup: [{
+    qualifier: 'MaterialDetails',
+    position: 50,
+    label: '원자재 ID'
+  }]
+  RawMaterialID;
+
+  // 보상액에 RewardCriticality를 연결해 정보성 강조를 적용한다.
+  @UI.fieldGroup: [{
+    qualifier: 'RewardBasis',
+    position: 10,
+    label: '배분율(%)'
+  }]
+  SupplierSharePercent;
+
+  @UI.fieldGroup: [{
+    qualifier: 'RewardBasis',
+    position: 20,
+    label: '인정절감액'
+  }]
+  RecognizedSavingAmount;
+
+  @UI.fieldGroup: [{
+    qualifier: 'RewardBasis',
+    position: 30,
+    label: '산정 보상액',
+    criticality: 'RewardCriticality'
+  }]
+  SupplierRewardAmount;
+
+  // 금액/수량에 연결되어 자동 표시되므로 별도 필드로는 숨긴다.
+  @UI.hidden: true
+  CurrencyCode;
+
+  @UI.hidden: true
+  WeightUOM;
+}
+
